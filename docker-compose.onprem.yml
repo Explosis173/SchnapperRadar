@@ -1,0 +1,48 @@
+# Komplett On-Premise: keine Cloud-KI, alles läuft bei dir (Ollama).
+#   docker compose -f docker-compose.yml -f docker-compose.onprem.yml up -d --build
+# Erster Start lädt das Modell (gemma3:12b ≈ 8 GB) – dauert einen Moment.
+# Schwache Hardware/ohne GPU: OLLAMA_MODEL=gemma3:4b in .env setzen.
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    volumes:
+      - ollama:/root/.ollama
+    environment:
+      OLLAMA_KEEP_ALIVE: 30m
+    # NVIDIA-GPU nutzen (nvidia-container-toolkit nötig):
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+  ollama-pull:
+    image: ollama/ollama:latest
+    depends_on:
+      - ollama
+    environment:
+      OLLAMA_HOST: ollama:11434
+    entrypoint: ["/bin/sh", "-c", "until ollama list >/dev/null 2>&1; do sleep 2; done; ollama pull ${OLLAMA_MODEL:-gemma3:12b}"]
+    restart: "no"
+
+  app:
+    depends_on:
+      ollama-pull:
+        condition: service_completed_successfully
+    environment:
+      Ai__Provider: ollama
+      Ai__BaseUrl: http://ollama:11434/v1/
+      Ai__Model: ${OLLAMA_MODEL:-gemma3:12b}
+      Ai__ApiKey: ""
+      Ai__ReasoningEffort: ""
+      Ai__TimeoutSeconds: "180"
+      # Lokale Modelle sind langsamer → weniger parallel, dafür etwas mehr Kandidaten prüfen ist ok (kostet nichts).
+      Pipeline__AiConcurrency: "1"
+      Pipeline__AiTopK: "10"
+
+volumes:
+  ollama:

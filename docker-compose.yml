@@ -1,0 +1,50 @@
+# Lokal oder auf einem eigenen Server:
+#   cp .env.example .env   # Werte eintragen
+#   docker compose up -d --build
+# → http://localhost:8080
+name: schnapperradar
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: schnapperradar
+      POSTGRES_USER: schnapper
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD in .env setzen}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U schnapper -d schnapperradar"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    # Bewusst kein Port nach außen – nur die App spricht mit der DB.
+
+  app:
+    build: .
+    image: schnapperradar:latest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      ConnectionStrings__Postgres: "Host=db;Database=schnapperradar;Username=schnapper;Password=${POSTGRES_PASSWORD}"
+    ports:
+      # Nur auf diesem Rechner erreichbar. Für Zugriff im LAN: "8080:8080" (dann Auth__CookieSecure=SameAsRequest
+      # oder besser einen Reverse-Proxy mit HTTPS davor).
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - keys:/data/keys
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+volumes:
+  pgdata:
+  keys:

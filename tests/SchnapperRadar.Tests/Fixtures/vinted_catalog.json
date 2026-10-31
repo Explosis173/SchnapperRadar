@@ -1,0 +1,7 @@
+{"items":[
+ {"id":5123456789,"title":"Nike Air Max 90","price":{"amount":"35.0","currency_code":"EUR"},"service_fee":{"amount":"2.45","currency_code":"EUR"},
+  "total_item_price":{"amount":"37.45","currency_code":"EUR"},"brand_title":"Nike","size_title":"42","status":"Sehr gut",
+  "url":"https://www.vinted.de/items/5123456789-nike-air-max-90","photo":{"url":"https://images1.vinted.net/t/abc.jpeg","high_resolution":{"timestamp":1761900000}},
+  "user":{"id":987,"login":"sneakerqueen","business":false}},
+ {"id":5123456790,"title":"Zara Jacke","price":"12.0","status":"Neu mit Etikett","url":"javascript:alert(1)","user":{"id":988,"login":"x","business":true}}
+]}

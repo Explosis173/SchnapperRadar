@@ -1,0 +1,17 @@
+[
+  { "name": "Foundry gpt-5-nano", "provider": "foundry", "model": "gpt-5-nano", "baseUrlEnv": "FOUNDRY_BASE_URL", "apiKeyEnv": "FOUNDRY_API_KEY",
+    "reasoningEffort": "minimal", "inputPricePerMTokens": 0.05, "outputPricePerMTokens": 0.40 },
+  { "name": "Foundry gpt-5-mini", "provider": "foundry", "model": "gpt-5-mini", "baseUrlEnv": "FOUNDRY_BASE_URL", "apiKeyEnv": "FOUNDRY_API_KEY",
+    "reasoningEffort": "minimal", "inputPricePerMTokens": 0.25, "outputPricePerMTokens": 2.00 },
+  { "name": "Foundry gpt-4.1-mini", "provider": "foundry", "model": "gpt-4.1-mini", "baseUrlEnv": "FOUNDRY_BASE_URL", "apiKeyEnv": "FOUNDRY_API_KEY",
+    "inputPricePerMTokens": 0.40, "outputPricePerMTokens": 1.60 },
+  { "name": "Gemini Flash-Lite (Free Tier)", "provider": "gemini", "model": "gemini-2.5-flash-lite", "apiKeyEnv": "GEMINI_API_KEY",
+    "inputPricePerMTokens": 0, "outputPricePerMTokens": 0 },
+  { "name": "Groq Llama 3.3 70B (Free Tier)", "provider": "groq", "model": "llama-3.3-70b-versatile", "apiKeyEnv": "GROQ_API_KEY",
+    "inputPricePerMTokens": 0, "outputPricePerMTokens": 0 },
+  { "name": "Claude Haiku", "provider": "anthropic", "model": "claude-haiku-5-5", "apiKeyEnv": "ANTHROPIC_API_KEY" },
+  { "name": "Ollama gemma3:12b (lokal)", "provider": "ollama", "model": "gemma3:12b", "baseUrl": "http://localhost:11434/v1/",
+    "inputPricePerMTokens": 0, "outputPricePerMTokens": 0 },
+  { "name": "Ollama qwen3:8b (lokal)", "provider": "ollama", "model": "qwen3:8b", "baseUrl": "http://localhost:11434/v1/",
+    "inputPricePerMTokens": 0, "outputPricePerMTokens": 0 }
+]

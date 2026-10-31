@@ -1,0 +1,10 @@
+**/bin
+**/obj
+**/node_modules
+src/SchnapperRadar.Api/wwwroot
+.env
+.git
+.idea
+.vs
+tests
+tools

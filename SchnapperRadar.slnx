@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SchnapperRadar.Api/SchnapperRadar.Api.csproj" />
+    <Project Path="src/SchnapperRadar.Application/SchnapperRadar.Application.csproj" />
+    <Project Path="src/SchnapperRadar.Domain/SchnapperRadar.Domain.csproj" />
+    <Project Path="src/SchnapperRadar.Infrastructure/SchnapperRadar.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SchnapperRadar.Tests/SchnapperRadar.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/SchnapperRadar.Benchmark/SchnapperRadar.Benchmark.csproj" />
+  </Folder>
+</Solution>
