@@ -1,0 +1,35 @@
+{
+  "name": "SchnapperRadar",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "features": {
+    "ghcr.io/devcontainers/features/dotnet:2": { "version": "10.0" },
+    "ghcr.io/devcontainers/features/node:1": { "version": "22" }
+  },
+  "forwardPorts": [8080],
+  "portsAttributes": {
+    "8080": { "label": "SchnapperRadar", "onAutoForward": "openBrowser" }
+  },
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+  "postStartCommand": "bash .devcontainer/start.sh",
+  "postAttachCommand": "cat ~/.schnapperradar/info.txt 2>/dev/null || true",
+  "secrets": {
+    "GEMINI_API_KEY": {
+      "description": "Kostenloser Gemini-Key (optional). Ohne Key wird GitHub Models genutzt.",
+      "documentationUrl": "https://aistudio.google.com/apikey"
+    },
+    "GROQ_API_KEY": {
+      "description": "Optionaler Gratis-Fallback.",
+      "documentationUrl": "https://console.groq.com/keys"
+    },
+    "HOME_POSTAL_CODE": {
+      "description": "Deine PLZ für Abhol-Entfernung und Fahrtkosten (optional, Standard 10115)."
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": ["ms-dotnettools.csdevkit", "Vue.volar"]
+    }
+  }
+}

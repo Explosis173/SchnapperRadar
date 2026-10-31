@@ -6,6 +6,8 @@ Findet die besten Schnapper auf **Kleinanzeigen** und **Vinted**, rechnet **alle
 - **Suche** mit Filtern: Plattform, Preis, max. Gesamtkosten inkl. Versand, Versand/Abholung, Entfernung, Zustand, Mindest-Vertrauen, nur Privatverkäufer, Sortierung.
 - **KI kostenlos out of the box**: Gemini Free Tier mit automatischer Modellwahl + Gratis-Fallbacks (Groq, GitHub Models). Alternativ per Umgebungsvariable Microsoft Foundry, Claude, OpenAI oder **komplett lokal mit Ollama**.
 
+[![In GitHub Codespaces öffnen](https://github.com/codespaces/badge.svg)](https://codespaces.new/Explosis173/SchnapperRadar?quickstart=1)
+
 Stack: ASP.NET Core 10 (Clean Architecture) · EF Core + PostgreSQL · Vue 3 + TypeScript (Composition API) · Docker.
 
 ---
@@ -95,6 +97,16 @@ Ohne KI (`Ai__Provider=none`) läuft alles weiter, dann nur mit Heuristik.
 ---
 
 ## Starten
+
+### 0. Ohne Installation: GitHub Codespaces
+
+1. Optional unter **Settings → Secrets and variables → Codespaces** anlegen: `GEMINI_API_KEY`, `GROQ_API_KEY`, `HOME_POSTAL_CODE`.
+   Ohne Gemini-Key nimmt die App GitHub Models (gratis, das Token bringt Codespaces mit).
+2. Oben auf den Button **„Open in GitHub Codespaces“** klicken (oder **Code → Codespaces → Create codespace on main**).
+3. Warten, bis das Terminal den Kasten „SchnapperRadar läuft“ mit **Passwort** zeigt (erster Start ca. 3–5 min).
+4. Reiter **PORTS** → Port **8080** → Globus-Symbol → mit dem Passwort anmelden.
+
+Gut zum Ausprobieren, aber kein Dauerbetrieb: Codespaces stoppt nach 30 min Inaktivität (dann läuft auch der Feed-Job nicht), und das Gratis-Kontingent ist begrenzt. Außerdem blocken Vinted/Kleinanzeigen Cloud-IPs teils. Für 24/7: Azure (unten) oder ein eigener Rechner mit Docker.
 
 ### 1. Lokal entwickeln
 
