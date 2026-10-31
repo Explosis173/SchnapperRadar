@@ -26,7 +26,7 @@ internal sealed class OpenAiCompatibleChatClient(HttpClient http, ResolvedAiConf
 
     public bool IsConfigured => true;
     public string Provider => config.Provider;
-    public string ModelId => config.Model;
+    public string ModelId => ModelResolver.Cached(config) ?? config.Model;
 
     public Task<Result<ChatCompletion>> CompleteJsonAsync(string systemPrompt, string userPrompt, CancellationToken ct) =>
         AiHttp.Guard(() => CompleteCoreAsync(systemPrompt, userPrompt, ct), ct);
@@ -34,9 +34,10 @@ internal sealed class OpenAiCompatibleChatClient(HttpClient http, ResolvedAiConf
     private async Task<Result<ChatCompletion>> CompleteCoreAsync(string systemPrompt, string userPrompt, CancellationToken ct)
     {
         var sw = Stopwatch.StartNew();
+        var model = await ModelResolver.ResolveAsync(http, config, ct);
         var body = new JsonObject
         {
-            ["model"] = config.Model,
+            ["model"] = model,
             ["messages"] = new JsonArray
             {
                 new JsonObject { ["role"] = "system", ["content"] = systemPrompt },
@@ -71,7 +72,7 @@ internal sealed class OpenAiCompatibleChatClient(HttpClient http, ResolvedAiConf
         var (input, output) = root.TryGetProperty("usage", out var u)
             ? (Int(u, "prompt_tokens"), Int(u, "completion_tokens"))
             : (0, 0);
-        return Result<ChatCompletion>.Success(new ChatCompletion(content, input, output, sw.Elapsed));
+        return Result<ChatCompletion>.Success(new ChatCompletion(content, input, output, sw.Elapsed, $"{config.Provider}/{model}"));
     }
 
     private async Task<HttpResponseMessage> SendAsync(JsonObject body, CancellationToken ct)
@@ -156,7 +157,7 @@ internal sealed class AnthropicChatClient(HttpClient http, ResolvedAiConfig conf
 
     private static StringContent Json(JsonObject body) => new(body.ToJsonString(), Encoding.UTF8, "application/json");
 
-    private static Result<ChatCompletion> Parse(string raw, string prefix, Stopwatch sw)
+    private Result<ChatCompletion> Parse(string raw, string prefix, Stopwatch sw)
     {
         using var doc = JsonDocument.Parse(raw);
         var text = string.Concat(doc.RootElement.GetProperty("content").EnumerateArray()
@@ -165,8 +166,21 @@ internal sealed class AnthropicChatClient(HttpClient http, ResolvedAiConfig conf
         var usage = doc.RootElement.TryGetProperty("usage", out var u) ? u : default;
         var input = usage.ValueKind == JsonValueKind.Object && usage.TryGetProperty("input_tokens", out var i) ? i.GetInt32() : 0;
         var output = usage.ValueKind == JsonValueKind.Object && usage.TryGetProperty("output_tokens", out var o) ? o.GetInt32() : 0;
-        return Result<ChatCompletion>.Success(new ChatCompletion(prefix + text, input, output, sw.Elapsed));
+        return Result<ChatCompletion>.Success(new ChatCompletion(prefix + text, input, output, sw.Elapsed, $"{config.Provider}/{config.Model}"));
     }
+}
+
+internal static class AiErrors
+{
+    /// <summary>Lohnt es sich, einen anderen Anbieter zu probieren bzw. diesen kurz zu pausieren?</summary>
+    public static bool IsTransient(string? error) =>
+        error is not null &&
+        (error.StartsWith("KI-Fehler 429", StringComparison.Ordinal) ||
+         error.StartsWith("KI-Fehler 5", StringComparison.Ordinal) ||
+         error.StartsWith("KI-Fehler 403", StringComparison.Ordinal) ||
+         error.StartsWith("KI nicht erreichbar", StringComparison.Ordinal) ||
+         error.StartsWith("KI-Timeout", StringComparison.Ordinal) ||
+         error.StartsWith("KI vorübergehend", StringComparison.Ordinal));
 }
 
 /// <summary>Netzwerk-/Timeout-/Formatfehler → Result.Failure statt Exception, damit eine kaputte KI nie die Suche abbricht.</summary>

@@ -229,7 +229,7 @@ public sealed class DealPipeline(
             a.AiContentHash = AiPrompt.ContentHash(c.Listing);
             a.RedFlags = [.. a.RedFlags.Where(f => !f.StartsWith(AiFlagPrefix, StringComparison.Ordinal)), .. r.RedFlags.Select(f => AiFlagPrefix + f)];
             a.Stage = PipelineStage.AiAssessed;
-            usageRepository.Add(new AiUsageEntry { Model = ai.ModelLabel, InputTokens = r.InputTokens, OutputTokens = r.OutputTokens });
+            usageRepository.Add(new AiUsageEntry { Model = r.Model ?? ai.ModelLabel, InputTokens = r.InputTokens, OutputTokens = r.OutputTokens });
             assessed++;
         }
 

@@ -4,7 +4,7 @@ Findet die besten Schnapper auf **Kleinanzeigen** und **Vinted**, rechnet **alle
 
 - **Feed**: einfach scrollen. Die App sucht regelmäßig nach deinen Interessen und zeigt nur geprüfte Treffer mit gutem Score.
 - **Suche** mit Filtern: Plattform, Preis, max. Gesamtkosten inkl. Versand, Versand/Abholung, Entfernung, Zustand, Mindest-Vertrauen, nur Privatverkäufer, Sortierung.
-- **KI frei wählbar** per Umgebungsvariable: Microsoft Foundry, Gemini (gratis), GitHub Models (gratis), Claude, OpenAI oder **komplett lokal mit Ollama**.
+- **KI kostenlos out of the box**: Gemini Free Tier mit automatischer Modellwahl + Gratis-Fallbacks (Groq, GitHub Models). Alternativ per Umgebungsvariable Microsoft Foundry, Claude, OpenAI oder **komplett lokal mit Ollama**.
 
 Stack: ASP.NET Core 10 (Clean Architecture) · EF Core + PostgreSQL · Vue 3 + TypeScript (Composition API) · Docker.
 
@@ -45,12 +45,30 @@ Die Aufgabe ist Klassifikation mit kurzem JSON-Output (~1.000 Tokens pro Prüfun
 
 | Einsatz | Empfehlung | Kosten (ca.) |
 |---|---|---|
+| **Kostenlos (Standard in `.env.example`)** | Gemini mit `Ai__Model=auto` + Fallbacks Groq/GitHub | 0 € |
 | **Microsoft Foundry (dein Plan)** | `gpt-5-nano` mit `Ai__ReasoningEffort=minimal` | ~0,05 $ / 1 Mio. Input, ~0,40 $ / 1 Mio. Output → **~0,1 $ pro 1.000 geprüfte Inserate** |
 | Foundry, wenn nano zu viele Fakes durchlässt | `gpt-5-mini` | ~5× teurer, immer noch < 1 $ pro 1.000 |
-| Kostenlos | Gemini `gemini-2.5-flash-lite` (Free Tier, Key mit Google-Konto) | 0 € (Rate-Limits) |
 | Komplett lokal | Ollama `gemma3:12b` (gut auf Deutsch), schwache HW: `gemma3:4b` | 0 € |
 
 Preise schwanken je nach Region und Deployment-Typ, also im Azure-Portal gegenchecken.
+
+### Das Gratis-Setup im Detail
+
+```env
+Ai__Provider=gemini
+Ai__Model=auto                         # nimmt das neueste stabile Flash-Lite-Modell aus Googles Modellliste
+Ai__ApiKey=<Key von aistudio.google.com/apikey>
+Ai__Fallbacks__0__Provider=groq        # optional, Key gratis: console.groq.com/keys
+Ai__Fallbacks__0__ApiKey=
+Ai__Fallbacks__1__Provider=github      # optional, Token mit "Models: read"
+Ai__Fallbacks__1__ApiKey=
+```
+
+- **`auto`**: Gratis-Anbieter benennen ihre Modelle ständig um. Die App fragt `/models` ab und nimmt das neueste stabile `gemini-X.Y-flash-lite` (Preview-, TTS- und Pro-Varianten werden ignoriert). Bei Groq nimmt sie `gpt-oss-120b` bzw. Llama 70B. Fester Name geht natürlich auch.
+- **Fallback-Kette**: Läuft Gemini ins Rate-Limit (429) oder fällt aus, übernimmt der nächste Anbieter, und der volle wird 2 Minuten pausiert. Fallbacks ohne Key werden ignoriert, du kannst sie also leer lassen.
+- Die Kette funktioniert mit jedem Anbieter, z. B. **Foundry als Haupt-KI und Gemini als Gratis-Reserve**.
+- Free Tiers haben Tageslimits. Bei 8 KI-Prüfungen pro Suche und stündlichem Feed reicht das für normalen privaten Gebrauch. Wenn nicht: `Pipeline__AiTopK` runter oder Fallbacks rein.
+- Bei Googles Free Tier dürfen Eingaben zur Produktverbesserung genutzt werden. Hier gehen nur öffentliche Inseratsdaten raus, nichts Persönliches.
 
 **Selbst messen statt glauben:** Der Benchmark lässt jedes Modell auf 20 gelabelte Testinserate los (8 Fakes inkl. Prompt-Injection, 12 echte) und misst Fake-Erkennung, Fehlalarme, Latenz und Kosten:
 
@@ -61,7 +79,7 @@ export GEMINI_API_KEY=...            # optional
 dotnet run --project tools/SchnapperRadar.Benchmark
 ```
 
-Modelle und Preise stehen in `tools/SchnapperRadar.Benchmark/models.json`. Modelle ohne gesetzten Key werden übersprungen. Ergebnis landet in `benchmark-results.md`, inkl. „bestes Modell“ und „bestes Preis-Leistungs-Verhältnis“.
+Modelle und Preise stehen in `tools/SchnapperRadar.Benchmark/models.json` (Gratis-Modelle über `GEMINI_API_KEY`, `GROQ_API_KEY`, `GITHUB_MODELS_TOKEN`). Modelle ohne gesetzten Key werden übersprungen. Ergebnis landet in `benchmark-results.md`, inkl. „bestes Modell“ und „bestes Preis-Leistungs-Verhältnis“.
 
 ### „Claude / ChatGPT / Google-Account anbinden“
 
@@ -150,8 +168,9 @@ az containerapp update -n schnapperradar -g $RG --min-replicas 1 --max-replicas 
 | `Home__CarCostPerKm` | `0.30` | Fahrtkosten pro km (Hin + Rück wird gerechnet) |
 | `Home__MaxPickupDistanceKm` | `50` | weiter weg = keine Abholung |
 | `Ai__Provider` | `none` | `foundry`, `foundry-claude`, `gemini`, `github`, `groq`, `openrouter`, `openai`, `anthropic`, `ollama`, `custom`, `none` |
-| `Ai__BaseUrl` / `Ai__Model` / `Ai__ApiKey` | je Provider | |
+| `Ai__BaseUrl` / `Ai__Model` / `Ai__ApiKey` | je Provider | `Ai__Model=auto` bei Gemini/Groq = automatische Wahl |
 | `Ai__ReasoningEffort` | – | nur für gpt-5*/o*: `minimal`/`low` |
+| `Ai__Fallbacks__N__Provider` / `__ApiKey` / `__Model` / `__BaseUrl` | – | Ersatz-Anbieter bei Rate-Limit/Ausfall, der Reihe nach |
 | `Pipeline__EnrichTopK` / `Pipeline__AiTopK` | `20` / `8` | Trichterbreite pro Suche |
 | `Pipeline__MinTrustForAi` | `40` | darunter kein KI-Geld |
 | `Feed__RefreshMinutes` / `Feed__MinScore` | `60` / `55` | |

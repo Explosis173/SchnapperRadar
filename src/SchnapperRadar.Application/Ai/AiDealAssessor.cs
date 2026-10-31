@@ -22,6 +22,6 @@ public sealed class AiDealAssessor(IAiChatClient client)
 
         var p = parsed.Value!;
         return Result<AiAssessment>.Success(new AiAssessment(p.Legitimacy, p.DealQuality, p.EstimatedMarketPrice, p.Verdict,
-            p.RedFlags, p.Summary, c.InputTokens, c.OutputTokens, c.Latency));
+            p.RedFlags, p.Summary, c.InputTokens, c.OutputTokens, c.Latency, c.Model));
     }
 }

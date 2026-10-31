@@ -54,9 +54,10 @@ public static class DependencyInjection
         services.AddHttpClient(AiChatClientFactory.HttpClientName)
             .AddStandardResilienceHandler(o =>
             {
-                // Free-Tiers antworten gern mit 429 → mit Backoff erneut versuchen.
-                o.Retry.MaxRetryAttempts = 3;
-                o.Retry.Delay = TimeSpan.FromSeconds(3);
+                // Kurz erneut versuchen; bei Dauer-429 übernimmt die Fallback-Kette den nächsten Anbieter.
+                o.Retry.MaxRetryAttempts = 1;
+                o.Retry.Delay = TimeSpan.FromSeconds(2);
+                o.Retry.ShouldRetryAfterHeader = false; // nicht 60 s auf ein Gratis-Kontingent warten
                 o.AttemptTimeout.Timeout = TimeSpan.FromSeconds(120);
                 o.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(400);
                 o.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(240);

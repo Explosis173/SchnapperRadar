@@ -11,4 +11,5 @@ public sealed record AiAssessment(
     string Summary,
     int InputTokens,
     int OutputTokens,
-    TimeSpan Latency);
+    TimeSpan Latency,
+    string? Model = null);

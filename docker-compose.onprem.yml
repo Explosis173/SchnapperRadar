@@ -39,6 +39,9 @@ services:
       Ai__Model: ${OLLAMA_MODEL:-gemma3:12b}
       Ai__ApiKey: ""
       Ai__ReasoningEffort: ""
+      # Wirklich on-prem: Cloud-Fallbacks aus .env abschalten.
+      Ai__Fallbacks__0__Provider: none
+      Ai__Fallbacks__1__Provider: none
       Ai__TimeoutSeconds: "180"
       # Lokale Modelle sind langsamer → weniger parallel, dafür etwas mehr Kandidaten prüfen ist ok (kostet nichts).
       Pipeline__AiConcurrency: "1"

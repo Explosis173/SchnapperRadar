@@ -2,7 +2,8 @@ using SchnapperRadar.Application.Common;
 
 namespace SchnapperRadar.Application.Abstractions;
 
-public sealed record ChatCompletion(string Content, int InputTokens, int OutputTokens, TimeSpan Latency);
+/// <param name="Model">Tatsächlich verwendetes Modell (bei Auto-Auswahl/Fallback).</param>
+public sealed record ChatCompletion(string Content, int InputTokens, int OutputTokens, TimeSpan Latency, string? Model = null);
 
 /// <summary>Provider-neutraler LLM-Zugang (Foundry, OpenAI, Gemini, Ollama, Anthropic, ...).</summary>
 public interface IAiChatClient
